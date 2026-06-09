@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>高考AI择校助手 - 智能匹配你的理想大学</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- 粒子背景 -->
+  <div class="particles-bg" id="particlesBg"></div>
+
+  <!-- 主容器 -->
+  <div class="app-container">
+    <!-- 顶部导航 -->
+    <header class="app-header">
+      <div class="logo">
+        <span class="logo-icon">🎓</span>
+        <span class="logo-text">高考AI择校助手</span>
+      </div>
+      <div class="header-steps" id="headerSteps">
+        <div class="step active" data-step="1">
+          <span class="step-num">1</span>
+          <span class="step-label">信息填写</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="2">
+          <span class="step-num">2</span>
+          <span class="step-label">AI匹配</span>
+        </div>
+        <div class="step-connector"></div>
+        <div class="step" data-step="3">
+          <span class="step-num">3</span>
+          <span class="step-label">学校详情</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 内容区域 -->
+    <main class="app-main">
+      <!-- 步骤1：问答表单 -->
+      <section class="panel panel-form active" id="panelForm">
+        <div class="panel-header">
+          <h2>📋 填写你的信息</h2>
+          <p>回答以下问题，AI将为你智能匹配最合适的大学</p>
+        </div>
+
+        <form id="questionForm" class="question-form" onsubmit="return handleSubmit()" novalidate>
+          <!-- Q1: 分数 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="q-num">Q1</span>
+              你的高考分数（或预估分数）是多少？
+            </label>
+            <div class="input-row">
+              <input type="number" id="score" class="form-input" placeholder="例：650" min="300" max="750" required>
+              <select id="province" class="form-select" required>
+                <option value="">选择省份</option>
+                <option value="北京">北京</option>
+                <option value="上海">上海</option>
+                <option value="广东">广东</option>
+                <option value="浙江">浙江</option>
+                <option value="江苏">江苏</option>
+                <option value="湖北">湖北</option>
+                <option value="四川">四川</option>
+                <option value="陕西">陕西</option>
+                <option value="山东">山东</option>
+                <option value="河南">河南</option>
+                <option value="福建">福建</option>
+                <option value="湖南">湖南</option>
+                <option value="安徽">安徽</option>
+                <option value="河北">河北</option>
+                <option value="辽宁">辽宁</option>
+                <option value="吉林">吉林</option>
+                <option value="黑龙江">黑龙江</option>
+                <option value="重庆">重庆</option>
+                <option value="天津">天津</option>
+                <option value="山西">山西</option>
+                <option value="江西">江西</option>
+                <option value="广西">广西</option>
+                <option value="云南">云南</option>
+                <option value="贵州">贵州</option>
+                <option value="甘肃">甘肃</option>
+                <option value="内蒙古">内蒙古</option>
+                <option value="新疆">新疆</option>
+                <option value="西藏">西藏</option>
+                <option value="海南">海南</option>
+                <option value="宁夏">宁夏</option>
+                <option value="青海">青海</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Q2: 专业兴趣 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="q-num">Q2</span>
+              你感兴趣的专业方向是什么？
+            </label>
+            <div class="tag-group" id="interestTags">
+              <button type="button" class="tag" data-value="工科">🔧 工科（计算机/机械/电气等）</button>
+              <button type="button" class="tag" data-value="理科">🔬 理科（数学/物理/化学等）</button>
+              <button type="button" class="tag" data-value="文科">📚 文科（中文/历史/哲学等）</button>
+              <button type="button" class="tag" data-value="医学">💊 医学（临床/口腔/药学等）</button>
+              <button type="button" class="tag" data-value="商科">💰 商科（金融/会计/管理等）</button>
+              <button type="button" class="tag" data-value="法学">⚖️ 法学</button>
+              <button type="button" class="tag" data-value="艺术">🎨 艺术/设计</button>
+            </div>
+            <input type="hidden" id="interest">
+          </div>
+
+          <!-- Q3: 城市偏好 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="q-num">Q3</span>
+              你对学校所在城市有什么偏好？
+            </label>
+            <div class="tag-group" id="cityTags">
+              <button type="button" class="tag" data-value="一线">🌆 一线城市（北上广深）</button>
+              <button type="button" class="tag" data-value="新一线">🏙️ 新一线（杭州/成都/武汉等）</button>
+              <button type="button" class="tag" data-value="离家近">🏠 离家近最重要</button>
+              <button type="button" class="tag" data-value="无所谓">🌍 无所谓，学校好就行</button>
+            </div>
+            <input type="hidden" id="cityPreference">
+          </div>
+
+          <!-- Q4: 学校层次 vs 专业实力 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="q-num">Q4</span>
+              你更看重学校的名气（985/211）还是专业实力？
+            </label>
+            <div class="tag-group" id="priorityTags">
+              <button type="button" class="tag" data-value="名校优先">🏆 名校优先（985/211最重要）</button>
+              <button type="button" class="tag" data-value="专业优先">🎯 专业优先（专业排名最重要）</button>
+              <button type="button" class="tag" data-value="两者兼顾">⚖️ 两者兼顾</button>
+            </div>
+            <input type="hidden" id="priority">
+          </div>
+
+          <!-- Q5: 校园生活偏好 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="q-num">Q5</span>
+              你理想的大学生活是怎样的？
+            </label>
+            <div class="tag-group" id="lifestyleTags">
+              <button type="button" class="tag" data-value="学术派">📖 学术派：泡图书馆搞研究</button>
+              <button type="button" class="tag" data-value="社交派">🎉 社交派：社团活动丰富</button>
+              <button type="button" class="tag" data-value="吃货派">🍜 吃货派：美食最重要</button>
+              <button type="button" class="tag" data-value="安逸派">😌 安逸派：生活舒适就行</button>
+            </div>
+            <input type="hidden" id="lifestyle">
+          </div>
+
+          <!-- Q6: 预算 -->
+          <div class="form-group">
+            <label class="form-label">
+              <span class="q-num">Q6</span>
+              你对学费和生活费有预算限制吗？
+            </label>
+            <div class="tag-group" id="budgetTags">
+              <button type="button" class="tag" data-value="无限制">💰 无限制</button>
+              <button type="button" class="tag" data-value="中等预算">💵 中等预算（1-2万/年学费）</button>
+              <button type="button" class="tag" data-value="经济实惠">🪙 经济实惠优先</button>
+            </div>
+            <input type="hidden" id="budget">
+          </div>
+
+          <button type="submit" class="btn-submit" id="btnSubmit">
+            <span>🚀 开始AI智能匹配</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </form>
+      </section>
+
+      <!-- 步骤2：AI匹配中 -->
+      <section class="panel panel-loading" id="panelLoading">
+        <div class="loading-content">
+          <div class="ai-brain">
+            <div class="brain-pulse"></div>
+            <span class="brain-icon">🧠</span>
+          </div>
+          <h2>AI正在分析中...</h2>
+          <div class="loading-steps">
+            <div class="loading-step" id="loadStep1">✅ 收集你的偏好信息</div>
+            <div class="loading-step" id="loadStep2">🔍 扫描全国高校数据库</div>
+            <div class="loading-step" id="loadStep3">📊 多维度综合评分</div>
+            <div class="loading-step" id="loadStep4">🎯 生成个性化推荐</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 步骤3：结果展示 -->
+      <section class="panel panel-results" id="panelResults">
+        <div class="results-header">
+          <h2>🎉 为你推荐以下学校</h2>
+          <p>基于你的分数、兴趣和偏好，AI综合评分结果如下</p>
+        </div>
+
+        <!-- 匹配度排名 -->
+        <div class="match-summary" id="matchSummary"></div>
+
+        <!-- 学校详情卡片 -->
+        <div class="schools-grid" id="schoolsGrid"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- 学校详情弹窗 -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal" id="modalDetail">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <div class="modal-content" id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="js/app.js?v=4"></script>
+</body>
+</html>
