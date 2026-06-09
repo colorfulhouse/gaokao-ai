@@ -4,9 +4,374 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>高考AI择校助手 - 智能匹配你的理想大学</title>
-  <link rel="stylesheet" href="css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+  <style>
+:root {
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-dark: #4f46e5;
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --success: #10b981;
+  --danger: #ef4444;
+  --bg: #0f172a;
+  --bg-card: #1e293b;
+  --bg-card-hover: #334155;
+  --text: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --border: #334155;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --shadow: 0 4px 24px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 48px rgba(0,0,0,0.4);
+  --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+.particles-bg { position: fixed; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+
+.particle {
+  position: absolute; width: 4px; height: 4px; background: var(--primary);
+  border-radius: 50%; opacity: 0.3; animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 0.3; }
+  90% { opacity: 0.3; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+.app-container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 20px; }
+
+.app-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 28px; background: var(--bg-card); border-radius: var(--radius);
+  margin-bottom: 24px; border: 1px solid var(--border); flex-wrap: wrap; gap: 16px;
+}
+
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { font-size: 32px; animation: bounce 2s ease infinite; }
+@keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+.logo-text {
+  font-size: 22px; font-weight: 900;
+  background: linear-gradient(135deg, var(--primary-light), var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.header-steps { display: flex; align-items: center; gap: 8px; }
+
+.step {
+  display: flex; align-items: center; gap: 8px; opacity: 0.4; transition: var(--transition);
+}
+.step.active { opacity: 1; }
+.step.completed { opacity: 0.8; }
+
+.step-num {
+  width: 30px; height: 30px; border-radius: 50%; background: var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; transition: var(--transition);
+}
+
+.step.active .step-num { background: var(--primary); box-shadow: 0 0 16px rgba(99,102,241,0.4); }
+.step.completed .step-num { background: var(--success); }
+
+.step-label { font-size: 13px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; }
+.step.active .step-label { color: var(--text); }
+.step-connector { width: 24px; height: 2px; background: var(--border); opacity: 0.4; }
+
+/* 面板 */
+.panel { display: none; background: var(--bg-card); border-radius: var(--radius); padding: 32px; border: 1px solid var(--border); animation: fadeSlideIn 0.5s ease; }
+.panel.active { display: block; }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.panel-header { text-align: center; margin-bottom: 32px; }
+.panel-header h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+.panel-header p { color: var(--text-secondary); font-size: 15px; }
+
+/* 表单 */
+.question-form { display: flex; flex-direction: column; gap: 28px; }
+.form-group { display: flex; flex-direction: column; gap: 12px; }
+
+.form-label { font-size: 16px; font-weight: 600; color: var(--text); display: flex; align-items: center; gap: 10px; }
+
+.q-num {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border-radius: 8px; font-size: 13px; font-weight: 800; color: white; flex-shrink: 0;
+}
+
+.input-row { display: flex; gap: 12px; }
+
+.form-input {
+  flex: 1; padding: 14px 18px; background: var(--bg); border: 2px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 18px; font-weight: 600;
+  font-family: inherit; transition: var(--transition); outline: none;
+}
+
+.form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,0.2); }
+
+.form-select {
+  padding: 14px 18px; background: var(--bg); border: 2px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 15px;
+  font-family: inherit; cursor: pointer; transition: var(--transition); outline: none; min-width: 140px;
+}
+
+.form-select:focus { border-color: var(--primary); }
+
+/* 标签组 */
+.tag-group { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.tag {
+  padding: 10px 18px; background: var(--bg); border: 2px solid var(--border);
+  border-radius: 50px; color: var(--text-secondary); font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: var(--transition); font-family: inherit; white-space: nowrap;
+}
+
+.tag:hover { border-color: var(--primary-light); color: var(--text); transform: translateY(-2px); }
+
+.tag.selected {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  border-color: var(--primary); color: white; box-shadow: 0 4px 16px rgba(99,102,241,0.3);
+}
+
+/* 提交按钮 */
+.btn-submit {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 18px; margin-top: 12px;
+  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  border: none; border-radius: var(--radius-sm); color: white; font-size: 18px;
+  font-weight: 700; cursor: pointer; transition: var(--transition); font-family: inherit; letter-spacing: 0.5px;
+}
+
+.btn-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(99,102,241,0.4); }
+.btn-submit:active { transform: translateY(0); }
+.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* 加载动画 */
+.panel-loading.active { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 400px; }
+.loading-content { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+
+.ai-brain { position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; }
+.brain-icon { font-size: 60px; position: relative; z-index: 2; animation: brainPulse 2s ease infinite; }
+
+.brain-pulse {
+  position: absolute; width: 100%; height: 100%; border-radius: 50%;
+  background: var(--primary); opacity: 0.15; animation: pulseRing 2s ease infinite;
+}
+
+@keyframes brainPulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+@keyframes pulseRing { 0% { transform: scale(0.8); opacity: 0.3; } 100% { transform: scale(1.5); opacity: 0; } }
+
+.loading-content h2 { font-size: 22px; font-weight: 700; }
+.loading-steps { display: flex; flex-direction: column; gap: 10px; width: 280px; }
+
+.loading-step {
+  padding: 10px 16px; background: var(--bg); border-radius: var(--radius-xs);
+  font-size: 14px; color: var(--text-muted); text-align: left; transition: var(--transition); border: 1px solid transparent;
+}
+
+.loading-step.done { color: var(--success); border-color: rgba(16,185,129,0.2); background: rgba(16,185,129,0.05); }
+.loading-step.current { color: var(--primary-light); border-color: rgba(99,102,241,0.2); animation: shimmer 1.5s ease infinite; }
+
+@keyframes shimmer { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+/* 结果面板 */
+.results-header { text-align: center; margin-bottom: 28px; }
+.results-header h2 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+.results-header p { color: var(--text-secondary); }
+
+.match-summary { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+
+.match-card {
+  flex: 1; min-width: 200px; background: var(--bg); border-radius: var(--radius-sm);
+  padding: 20px; text-align: center; border: 1px solid var(--border); cursor: pointer;
+  transition: var(--transition); position: relative; overflow: hidden;
+}
+
+.match-card:hover { transform: translateY(-4px); border-color: var(--primary); box-shadow: var(--shadow); }
+
+.match-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+}
+
+.match-card .match-rank { font-size: 14px; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+.match-card .match-school { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+
+.match-card .match-score {
+  font-size: 32px; font-weight: 900;
+  background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.match-card .match-score-label { font-size: 12px; color: var(--text-muted); }
+
+.schools-grid { display: flex; flex-direction: column; gap: 20px; }
+
+.school-card { background: var(--bg); border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); transition: var(--transition); }
+.school-card:hover { border-color: var(--primary-light); box-shadow: var(--shadow); }
+
+.school-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; cursor: pointer; transition: var(--transition);
+}
+
+.school-card-header:hover { background: var(--bg-card); }
+.school-card-left { display: flex; align-items: center; gap: 16px; }
+
+.school-badge {
+  width: 56px; height: 56px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0;
+}
+
+.school-info h3 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+.school-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.school-tag { padding: 2px 10px; background: rgba(99,102,241,0.15); border-radius: 50px; font-size: 11px; color: var(--primary-light); font-weight: 600; }
+.school-tag.accent { background: rgba(245,158,11,0.15); color: var(--accent-light); }
+
+.school-card-right { display: flex; align-items: center; gap: 16px; }
+
+.match-percent {
+  font-size: 36px; font-weight: 900;
+  background: linear-gradient(135deg, var(--primary-light), var(--accent-light));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+
+.expand-icon { font-size: 20px; color: var(--text-muted); transition: var(--transition); }
+.school-card.expanded .expand-icon { transform: rotate(180deg); }
+
+.school-card-body { display: none; padding: 0 24px 24px; animation: fadeSlideIn 0.3s ease; }
+.school-card.expanded .school-card-body { display: block; }
+
+.dimensions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+
+.dimension-item { display: flex; flex-direction: column; gap: 6px; }
+.dimension-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-secondary); }
+.dimension-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.dimension-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+
+.dim-teacher { background: linear-gradient(90deg, #6366f1, #818cf8); }
+.dim-campus { background: linear-gradient(90deg, #10b981, #34d399); }
+.dim-dorm { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.dim-food { background: linear-gradient(90deg, #ef4444, #f87171); }
+.dim-fun { background: linear-gradient(90deg, #ec4899, #f472b6); }
+.dim-employ { background: linear-gradient(90deg, #06b6d4, #22d3ee); }
+
+.school-desc { color: var(--text-secondary); font-size: 14px; line-height: 1.8; margin-bottom: 20px; padding: 16px; background: var(--bg-card); border-radius: var(--radius-sm); }
+
+.detail-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 20px; }
+
+.detail-item { padding: 14px; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid transparent; transition: var(--transition); }
+.detail-item:hover { border-color: var(--border); }
+.detail-icon { font-size: 24px; margin-bottom: 6px; }
+.detail-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+.detail-value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+.pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.pros, .cons { padding: 16px; border-radius: var(--radius-sm); }
+.pros { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15); }
+.cons { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.15); }
+.pros h4, .cons h4 { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.pros h4 { color: var(--success); }
+.cons h4 { color: var(--danger); }
+.pros ul, .cons ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.pros li, .cons li { font-size: 13px; color: var(--text-secondary); padding-left: 16px; position: relative; }
+.pros li::before { content: '✓'; position: absolute; left: 0; color: var(--success); font-weight: 700; }
+.cons li::before { content: '✗'; position: absolute; left: 0; color: var(--danger); font-weight: 700; }
+
+.btn-detail {
+  width: 100%; padding: 12px;
+  background: linear-gradient(135deg, var(--primary), #8b5cf6);
+  border: none; border-radius: var(--radius-sm); color: white;
+  font-size: 15px; font-weight: 600; cursor: pointer; transition: var(--transition); font-family: inherit;
+}
+
+.btn-detail:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(99,102,241,0.3); }
+
+/* 弹窗 */
+.modal-overlay {
+  display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center;
+  padding: 20px; backdrop-filter: blur(4px);
+}
+
+.modal-overlay.active { display: flex; }
+
+.modal {
+  background: var(--bg-card); border-radius: var(--radius);
+  max-width: 700px; width: 100%; max-height: 85vh; overflow-y: auto;
+  position: relative; border: 1px solid var(--border); animation: fadeSlideIn 0.3s ease;
+}
+
+.modal-close {
+  position: sticky; top: 16px; right: 16px; float: right;
+  width: 36px; height: 36px; border-radius: 50%; background: var(--bg);
+  border: 1px solid var(--border); color: var(--text); font-size: 20px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: var(--transition); z-index: 10;
+}
+
+.modal-close:hover { background: var(--danger); border-color: var(--danger); }
+.modal-content { padding: 32px; padding-top: 0; }
+
+.modal-school-header { text-align: center; margin-bottom: 24px; padding-top: 16px; }
+.modal-school-header h2 { font-size: 28px; font-weight: 900; margin-bottom: 8px; }
+
+.modal-school-header .tier-badge {
+  display: inline-block; padding: 4px 16px;
+  background: linear-gradient(135deg, var(--accent), #f97316);
+  border-radius: 50px; font-size: 13px; font-weight: 700; color: white;
+}
+
+.image-gallery { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+.image-gallery img { width: 100%; height: 180px; object-fit: cover; border-radius: var(--radius-sm); }
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .app-container { padding: 12px; }
+  .app-header { flex-direction: column; text-align: center; padding: 16px; }
+  .header-steps { flex-wrap: wrap; justify-content: center; }
+  .panel { padding: 20px; }
+  .panel-header h2 { font-size: 22px; }
+  .input-row { flex-direction: column; }
+  .match-summary { flex-direction: column; }
+  .school-card-header { flex-direction: column; gap: 12px; text-align: center; }
+  .school-card-left { flex-direction: column; }
+  .school-card-right { flex-direction: column; }
+  .pros-cons { grid-template-columns: 1fr; }
+  .dimensions-grid { grid-template-columns: 1fr; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .image-gallery { grid-template-columns: 1fr; }
+  .modal-content { padding: 20px; }
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+  </style>
 </head>
 <body>
   <!-- 粒子背景 -->
@@ -14,7 +379,6 @@
 
   <!-- 主容器 -->
   <div class="app-container">
-    <!-- 顶部导航 -->
     <header class="app-header">
       <div class="logo">
         <span class="logo-icon">🎓</span>
@@ -38,7 +402,6 @@
       </div>
     </header>
 
-    <!-- 内容区域 -->
     <main class="app-main">
       <!-- 步骤1：问答表单 -->
       <section class="panel panel-form active" id="panelForm">
@@ -48,57 +411,29 @@
         </div>
 
         <form id="questionForm" class="question-form" onsubmit="return handleSubmit()" novalidate>
-          <!-- Q1: 分数 -->
           <div class="form-group">
-            <label class="form-label">
-              <span class="q-num">Q1</span>
-              你的高考分数（或预估分数）是多少？
-            </label>
+            <label class="form-label"><span class="q-num">Q1</span>你的高考分数（或预估分数）是多少？</label>
             <div class="input-row">
               <input type="number" id="score" class="form-input" placeholder="例：650" min="300" max="750" required>
               <select id="province" class="form-select" required>
                 <option value="">选择省份</option>
-                <option value="北京">北京</option>
-                <option value="上海">上海</option>
-                <option value="广东">广东</option>
-                <option value="浙江">浙江</option>
-                <option value="江苏">江苏</option>
-                <option value="湖北">湖北</option>
-                <option value="四川">四川</option>
-                <option value="陕西">陕西</option>
-                <option value="山东">山东</option>
-                <option value="河南">河南</option>
-                <option value="福建">福建</option>
-                <option value="湖南">湖南</option>
-                <option value="安徽">安徽</option>
-                <option value="河北">河北</option>
-                <option value="辽宁">辽宁</option>
-                <option value="吉林">吉林</option>
-                <option value="黑龙江">黑龙江</option>
-                <option value="重庆">重庆</option>
-                <option value="天津">天津</option>
-                <option value="山西">山西</option>
-                <option value="江西">江西</option>
-                <option value="广西">广西</option>
-                <option value="云南">云南</option>
-                <option value="贵州">贵州</option>
-                <option value="甘肃">甘肃</option>
-                <option value="内蒙古">内蒙古</option>
-                <option value="新疆">新疆</option>
-                <option value="西藏">西藏</option>
-                <option value="海南">海南</option>
-                <option value="宁夏">宁夏</option>
+                <option value="北京">北京</option><option value="上海">上海</option><option value="广东">广东</option>
+                <option value="浙江">浙江</option><option value="江苏">江苏</option><option value="湖北">湖北</option>
+                <option value="四川">四川</option><option value="陕西">陕西</option><option value="山东">山东</option>
+                <option value="河南">河南</option><option value="福建">福建</option><option value="湖南">湖南</option>
+                <option value="安徽">安徽</option><option value="河北">河北</option><option value="辽宁">辽宁</option>
+                <option value="吉林">吉林</option><option value="黑龙江">黑龙江</option><option value="重庆">重庆</option>
+                <option value="天津">天津</option><option value="山西">山西</option><option value="江西">江西</option>
+                <option value="广西">广西</option><option value="云南">云南</option><option value="贵州">贵州</option>
+                <option value="甘肃">甘肃</option><option value="内蒙古">内蒙古</option><option value="新疆">新疆</option>
+                <option value="西藏">西藏</option><option value="海南">海南</option><option value="宁夏">宁夏</option>
                 <option value="青海">青海</option>
               </select>
             </div>
           </div>
 
-          <!-- Q2: 专业兴趣 -->
           <div class="form-group">
-            <label class="form-label">
-              <span class="q-num">Q2</span>
-              你感兴趣的专业方向是什么？
-            </label>
+            <label class="form-label"><span class="q-num">Q2</span>你感兴趣的专业方向是什么？</label>
             <div class="tag-group" id="interestTags">
               <button type="button" class="tag" data-value="工科">🔧 工科（计算机/机械/电气等）</button>
               <button type="button" class="tag" data-value="理科">🔬 理科（数学/物理/化学等）</button>
@@ -111,12 +446,8 @@
             <input type="hidden" id="interest">
           </div>
 
-          <!-- Q3: 城市偏好 -->
           <div class="form-group">
-            <label class="form-label">
-              <span class="q-num">Q3</span>
-              你对学校所在城市有什么偏好？
-            </label>
+            <label class="form-label"><span class="q-num">Q3</span>你对学校所在城市有什么偏好？</label>
             <div class="tag-group" id="cityTags">
               <button type="button" class="tag" data-value="一线">🌆 一线城市（北上广深）</button>
               <button type="button" class="tag" data-value="新一线">🏙️ 新一线（杭州/成都/武汉等）</button>
@@ -126,12 +457,8 @@
             <input type="hidden" id="cityPreference">
           </div>
 
-          <!-- Q4: 学校层次 vs 专业实力 -->
           <div class="form-group">
-            <label class="form-label">
-              <span class="q-num">Q4</span>
-              你更看重学校的名气（985/211）还是专业实力？
-            </label>
+            <label class="form-label"><span class="q-num">Q4</span>你更看重学校的名气（985/211）还是专业实力？</label>
             <div class="tag-group" id="priorityTags">
               <button type="button" class="tag" data-value="名校优先">🏆 名校优先（985/211最重要）</button>
               <button type="button" class="tag" data-value="专业优先">🎯 专业优先（专业排名最重要）</button>
@@ -140,12 +467,8 @@
             <input type="hidden" id="priority">
           </div>
 
-          <!-- Q5: 校园生活偏好 -->
           <div class="form-group">
-            <label class="form-label">
-              <span class="q-num">Q5</span>
-              你理想的大学生活是怎样的？
-            </label>
+            <label class="form-label"><span class="q-num">Q5</span>你理想的大学生活是怎样的？</label>
             <div class="tag-group" id="lifestyleTags">
               <button type="button" class="tag" data-value="学术派">📖 学术派：泡图书馆搞研究</button>
               <button type="button" class="tag" data-value="社交派">🎉 社交派：社团活动丰富</button>
@@ -155,12 +478,8 @@
             <input type="hidden" id="lifestyle">
           </div>
 
-          <!-- Q6: 预算 -->
           <div class="form-group">
-            <label class="form-label">
-              <span class="q-num">Q6</span>
-              你对学费和生活费有预算限制吗？
-            </label>
+            <label class="form-label"><span class="q-num">Q6</span>你对学费和生活费有预算限制吗？</label>
             <div class="tag-group" id="budgetTags">
               <button type="button" class="tag" data-value="无限制">💰 无限制</button>
               <button type="button" class="tag" data-value="中等预算">💵 中等预算（1-2万/年学费）</button>
@@ -178,40 +497,30 @@
         </form>
       </section>
 
-      <!-- 步骤2：AI匹配中 -->
       <section class="panel panel-loading" id="panelLoading">
         <div class="loading-content">
-          <div class="ai-brain">
-            <div class="brain-pulse"></div>
-            <span class="brain-icon">🧠</span>
-          </div>
+          <div class="ai-brain"><div class="brain-pulse"></div><span class="brain-icon">🧠</span></div>
           <h2>AI正在分析中...</h2>
           <div class="loading-steps">
-            <div class="loading-step" id="loadStep1">✅ 收集你的偏好信息</div>
-            <div class="loading-step" id="loadStep2">🔍 扫描全国高校数据库</div>
+            <div class="loading-step done" id="loadStep1">✅ 收集你的偏好信息</div>
+            <div class="loading-step current" id="loadStep2">🔍 扫描全国高校数据库</div>
             <div class="loading-step" id="loadStep3">📊 多维度综合评分</div>
             <div class="loading-step" id="loadStep4">🎯 生成个性化推荐</div>
           </div>
         </div>
       </section>
 
-      <!-- 步骤3：结果展示 -->
       <section class="panel panel-results" id="panelResults">
         <div class="results-header">
           <h2>🎉 为你推荐以下学校</h2>
           <p>基于你的分数、兴趣和偏好，AI综合评分结果如下</p>
         </div>
-
-        <!-- 匹配度排名 -->
         <div class="match-summary" id="matchSummary"></div>
-
-        <!-- 学校详情卡片 -->
         <div class="schools-grid" id="schoolsGrid"></div>
       </section>
     </main>
   </div>
 
-  <!-- 学校详情弹窗 -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal" id="modalDetail">
       <button class="modal-close" id="modalClose">&times;</button>
@@ -219,6 +528,46 @@
     </div>
   </div>
 
-  <script src="js/app.js?v=4"></script>
+  <script>
+// ===== 学校数据库 =====
+var SCHOOLS_DB = [{id:1,name:"清华大学",tier:"985/211/双一流",rank:1,city:"北京",province:"北京",lat:40.0095,lng:116.3264,minScore:680,tags:["综合","工科强校","理科顶尖"],majors:["计算机科学与技术","电子信息工程","自动化","经济管理","建筑学","机械工程","土木工程"],strengths:["计算机","电子","自动化","经管","建筑"],teacherStrength:98,campusEnv:95,dormitory:75,genderRatio:{male:62,female:38},foodRating:88,entertainment:85,employmentRate:98.2,avgSalary:"18,000+",description:"清华大学是中国最顶尖的综合性研究型大学之一，以工科见长，理科、管理、人文等学科也有极高水准。校园位于北京海淀区，毗邻圆明园，环境优美。",campusImages:["https://images.unsplash.com/photo-1562774053-701939374585?w=600","https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=600"],dormitoryDesc:"四人/三人间为主，有空调和暖气，部分楼栋有独立卫浴。紫荆公寓条件较好。",foodDesc:"食堂数量众多，桃李园、紫荆园、清芬园等各有特色。北京烤鸭、麻辣香锅等应有尽有。",cityDesc:"北京，首都。文化底蕴深厚，就业机会丰富，但生活成本较高。冬季较冷，夏季炎热。",pros:["学术顶尖","就业极好","校友资源丰富","国际化程度高"],cons:["竞争激烈","压力大","生活成本高"]},{id:2,name:"北京大学",tier:"985/211/双一流",rank:2,city:"北京",province:"北京",lat:39.9869,lng:116.3059,minScore:678,tags:["综合","文理强校","医学顶尖"],majors:["数学","物理","中文","法学","经济学","临床医学","国际关系"],strengths:["数学","中文","法学","经济","医学"],teacherStrength:97,campusEnv:96,dormitory:72,genderRatio:{male:48,female:52},foodRating:86,entertainment:83,employmentRate:97.8,avgSalary:"17,500+",description:"北京大学是中国近代第一所国立综合性大学，以文科、理科、医学见长。未名湖、博雅塔是标志性景观，学术氛围浓厚。",campusImages:["https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?w=600","https://images.unsplash.com/photo-1564981797816-1043664bf78d?w=600"],dormitoryDesc:"四人/三人间为主，有空调暖气。部分楼栋较老旧，但正在逐步翻新。",foodDesc:"燕南美食、学一食堂、艺园等，口味多样。北大小西门外的美食街也是好去处。",cityDesc:"北京，首都。高校云集，文化资源丰富。中关村科技创新氛围浓厚。",pros:["学术氛围浓厚","文理医全面","人文学科顶尖","校园风景优美"],cons:["部分宿舍老旧","冬季寒冷","生活成本高"]},{id:3,name:"浙江大学",tier:"985/211/双一流",rank:3,city:"杭州",province:"浙江",lat:30.2636,lng:120.1236,minScore:665,tags:["综合","工科强校","创新创业"],majors:["计算机科学与技术","控制科学","光学工程","农学","临床医学","数学"],strengths:["计算机","控制","光学","农学","临床医学"],teacherStrength:93,campusEnv:94,dormitory:82,genderRatio:{male:58,female:42},foodRating:90,entertainment:92,employmentRate:97.5,avgSalary:"16,000+",description:"浙江大学坐落于「人间天堂」杭州，是中国最富创新创业精神的高水平大学之一。工科实力雄厚，计算机学科全国顶尖。",campusImages:["https://images.unsplash.com/photo-1598387993441-a364f854c3e1?w=600","https://images.unsplash.com/photo-1559827291-bba80fdad2d0?w=600"],dormitoryDesc:"紫金港校区宿舍条件较好，多为四人间，有空调和独立卫浴。其他校区条件参差不齐。",foodDesc:"浙大食堂被誉为「亚洲第一大食堂」，美食种类极其丰富。杭帮菜、川菜、粤菜应有尽有。",cityDesc:"杭州，互联网之都。阿里巴巴、网易等大厂聚集，就业机会多。西湖美景、城市治理水平全国领先。",pros:["创新创业氛围浓厚","地理位置优越","互联网就业好","校园设施新"],cons:["校区分散","房价高","梅雨季潮湿"]},{id:4,name:"武汉大学",tier:"985/211/双一流",rank:8,city:"武汉",province:"湖北",lat:30.5427,lng:114.3643,minScore:640,tags:["综合","樱花名校"],majors:["测绘科学与技术","法学","水利工程","遥感技术","生物学","计算机"],strengths:["测绘","遥感","法学","水利","生物"],teacherStrength:88,campusEnv:97,dormitory:78,genderRatio:{male:52,female:48},foodRating:92,entertainment:88,employmentRate:95.2,avgSalary:"14,000+",description:"武汉大学被誉为「中国最美丽的大学」，每年三月樱花盛开时节吸引全国游客。学科齐全，测绘遥感学科世界一流。",campusImages:["https://images.unsplash.com/photo-1564500601744-d5dfe4e7ab72?w=600","https://images.unsplash.com/photo-1580733855954-45ea2965007d?w=600"],dormitoryDesc:"四人间为主，有空调，部分楼栋有独立卫浴。樱花城堡宿舍是网红打卡点。",foodDesc:"街道口、广埠屯商圈美食众多。武大食堂价格实惠，热干面、豆皮、鸭脖应有尽有。",cityDesc:"武汉，九省通衢。高校数量全国第一，大学生超过百万。热干面、小龙虾全国知名。生活成本相对较低。",pros:["校园极美","生活成本低","美食天堂","学科全面"],cons:["夏季酷热","城市拥堵","毕业后多外流"]},{id:5,name:"华中科技大学",tier:"985/211/双一流",rank:9,city:"武汉",province:"湖北",lat:30.5147,lng:114.4223,minScore:638,tags:["工科强校","医科强校"],majors:["机械工程","光学工程","电气工程","计算机","临床医学","生物医学工程"],strengths:["机械","光学","电气","计算机","临床医学"],teacherStrength:90,campusEnv:82,dormitory:80,genderRatio:{male:65,female:35},foodRating:85,entertainment:82,employmentRate:96.8,avgSalary:"14,500+",description:"华中科技大学是国家'双一流'A类建设高校，工科实力位居全国前列，光学工程、机械工程享誉海内外。同济医学院是国内顶级医学院校之一。",campusImages:["https://images.unsplash.com/photo-1581078394301-c80ecb359ab0?w=600"],dormitoryDesc:"四人间为主，有空调和独立卫浴。沁苑、韵苑等宿舍区条件较新。",foodDesc:"东九、西十二等食堂数量众多。附近光谷商圈美食丰富，小龙虾、热干面是武汉特色。",cityDesc:"武汉，中部中心城市。光谷科技创新氛围浓厚，华为、小米等设立研发中心。",pros:["工科超强","医科实力雄厚","就业认可度高","科研平台多"],cons:["男女比例失衡","校园偏理工风","武汉夏季炎热"]},{id:6,name:"中国科学技术大学",tier:"985/211/双一流/C9",rank:7,city:"合肥",province:"安徽",lat:31.8214,lng:117.2844,minScore:665,tags:["理科顶尖","科研强校"],majors:["物理","化学","数学","计算机","核科学","天文学"],strengths:["物理","化学","数学","计算机","核科学"],teacherStrength:95,campusEnv:78,dormitory:78,genderRatio:{male:70,female:30},foodRating:76,entertainment:70,employmentRate:96.5,avgSalary:"15,500+",description:"中国科学技术大学是中国科学院直属的全国重点大学，以理科和前沿科学见长。少年班闻名全国，量子信息等方向国际领先。",campusImages:["https://images.unsplash.com/photo-1548266652-99cf27701ced?w=600"],dormitoryDesc:"四人间为主，有空调。条件一般但干净整洁。研究生宿舍条件更好。",foodDesc:"中科大食堂口味偏清淡。合肥本地美食有徽菜、臭鳜鱼等。外卖选择较多。",cityDesc:"合肥，长三角城市群副中心城市。近年发展迅猛，科大讯飞、蔚来等科技企业落户。生活成本低。",pros:["纯学术氛围","科研实力顶尖","师生比高","少年班传奇"],cons:["城市缺乏活力","男女比例失衡","社交活动较少"]},{id:7,name:"复旦大学",tier:"985/211/双一流",rank:4,city:"上海",province:"上海",lat:31.2989,lng:121.4997,minScore:672,tags:["综合","文理医强校"],majors:["新闻传播学","经济学","临床医学","数学","哲学","计算机"],strengths:["新闻","经济","临床医学","数学","哲学"],teacherStrength:95,campusEnv:88,dormitory:76,genderRatio:{male:46,female:54},foodRating:84,entertainment:90,employmentRate:97.8,avgSalary:"17,000+",description:"复旦大学是中国顶尖的综合性研究型大学，文科、理科、医学实力均衡。位于上海，国际化程度高。",campusImages:["https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=600"],dormitoryDesc:"四人/三人间为主，有空调。邯郸校区宿舍条件一般，枫林校区较新。",foodDesc:"旦苑、南苑等食堂各具特色。上海本帮菜、生煎、小笼包应有尽有。五角场商圈美食丰富。",cityDesc:"上海，国际大都市。金融、贸易、互联网产业发达，就业机会全国领先。生活品质高但成本也高。",pros:["地理位置优越","国际化程度高","文理医全面","校友网络强大"],cons:["生活成本极高","部分宿舍老旧","竞争激烈"]},{id:8,name:"上海交通大学",tier:"985/211/双一流",rank:5,city:"上海",province:"上海",lat:31.0258,lng:121.4371,minScore:670,tags:["工科强校","医学强校"],majors:["机械工程","船舶与海洋工程","电气工程","临床医学","计算机","材料科学"],strengths:["机械","船舶","电气","临床医学","计算机"],teacherStrength:94,campusEnv:85,dormitory:82,genderRatio:{male:60,female:40},foodRating:87,entertainment:88,employmentRate:98.0,avgSalary:"17,500+",description:"上海交通大学是历史悠久、享誉海内外的著名高等学府。工科、医科实力全国顶尖，安泰经管学院也是顶级商学院。",campusImages:["https://images.unsplash.com/photo-1583373834259-46cc92173cb7?w=600"],dormitoryDesc:"四人间为主，有空调和独立卫浴。闵行校区宿舍条件较好，徐汇校区略旧。",foodDesc:"交大食堂以好吃著称，各校区都有特色美食。徐汇校区周边美食街林立，各国料理应有尽有。",cityDesc:"上海，中国的经济中心。外资企业、金融机构、互联网大厂云集。国际化程度极高，文化资源丰富。",pros:["就业超强","工科医科顶尖","国际合作多","校友资源广"],cons:["生活成本高","闵行校区位置偏远","竞争压力大"]},{id:9,name:"南京大学",tier:"985/211/双一流",rank:6,city:"南京",province:"江苏",lat:32.0584,lng:118.7965,minScore:660,tags:["综合","文理强校"],majors:["天文学","地质学","中文","物理","化学","环境科学"],strengths:["天文","地质","中文","物理","化学"],teacherStrength:91,campusEnv:90,dormitory:75,genderRatio:{male:50,female:50},foodRating:82,entertainment:84,employmentRate:96.0,avgSalary:"15,000+",description:"南京大学是中国历史最悠久的现代大学之一，学科积淀深厚，天文、地质等基础学科全国第一。鼓楼校区古朴典雅。",campusImages:["https://images.unsplash.com/photo-1570128733274-73c2b79e5c76?w=600"],dormitoryDesc:"四人间为主，有空调。仙林校区宿舍条件较好，鼓楼校区条件一般。",foodDesc:"南大食堂干净实惠，鸭血粉丝汤、盐水鸭等南京特色美食应有尽有。汉口路美食街也是好去处。",cityDesc:"南京，六朝古都。历史文化底蕴深厚，教育资源丰富。江宁、栖霞等新区科技产业发展迅速。",pros:["基础学科顶尖","历史底蕴深厚","人文气息浓厚","均衡发展"],cons:["工科较弱","城市偏保守","天气多变"]},{id:10,name:"哈尔滨工业大学",tier:"985/211/双一流/C9",rank:12,city:"哈尔滨",province:"黑龙江",lat:45.7467,lng:126.7292,minScore:620,tags:["工科顶尖","航天强校"],majors:["航天工程","机械工程","焊接技术","计算机","土木工程","环境科学"],strengths:["航天","机械","焊接","计算机","土木"],teacherStrength:92,campusEnv:72,dormitory:74,genderRatio:{male:72,female:28},foodRating:78,entertainment:72,employmentRate:95.5,avgSalary:"14,000+",description:"哈尔滨工业大学是国家首批重点建设的6所高校之一，被誉为「工程师的摇篮」。航天、焊接、机器人等专业全国领先。",campusImages:["https://images.unsplash.com/photo-1548266652-99cf27701ced?w=600"],dormitoryDesc:"四人间为主，有暖气和空调。冬季供暖充足。条件中规中矩。",foodDesc:"东北菜分量足、口味重。锅包肉、红肠、中央大街冰棍都是特色。饭菜价格实惠。",cityDesc:"哈尔滨，冰城。俄罗斯风情浓郁，冰雪大世界世界闻名。冬季漫长寒冷，夏季凉爽宜人。生活成本较低。",pros:["工科底蕴深厚","航天专业顶尖","C9光环","生活成本低"],cons:["冬季极寒","城市经济下滑","毕业后多外流"]},{id:11,name:"中山大学",tier:"985/211/双一流",rank:10,city:"广州",province:"广东",lat:23.1246,lng:113.2885,minScore:645,tags:["综合","医学强校"],majors:["临床医学","经济学","工商管理","生态学","计算机","法学"],strengths:["临床医学","经济","管理","生态学"],teacherStrength:89,campusEnv:92,dormitory:80,genderRatio:{male:48,female:52},foodRating:93,entertainment:94,employmentRate:96.8,avgSalary:"15,500+",description:"中山大学是华南地区最高学府，由孙中山先生创办。医学实力雄厚，附属医院众多。校园位于广州，热带风情独特。",campusImages:["https://images.unsplash.com/photo-1570128733274-73c2b79e5c76?w=600"],dormitoryDesc:"四人间为主，有空调和独立卫浴。南校园红砖绿瓦，宿舍条件较好。",foodDesc:"广州是美食天堂。中大食堂及周边美食多到吃不完，早茶、肠粉、烧鹅、糖水应有尽有。",cityDesc:"广州，粤港澳大湾区核心城市。商贸发达，市场繁荣。美食、气候、活力兼备。粤语文化浓厚。",pros:["华南第一","医学强大","地理位置优","美食天堂"],cons:["回南天潮湿","部分校区偏远","粤语门槛"]},{id:12,name:"西安交通大学",tier:"985/211/双一流",rank:11,city:"西安",province:"陕西",lat:34.2454,lng:108.9834,minScore:630,tags:["工科强校","西部龙头"],majors:["电气工程","机械工程","能源与动力","管理科学","计算机","微电子"],strengths:["电气","机械","能源","管理","计算机"],teacherStrength:90,campusEnv:80,dormitory:76,genderRatio:{male:64,female:36},foodRating:85,entertainment:80,employmentRate:95.8,avgSalary:"14,200+",description:"西安交通大学是国家首批985重点建设高校，电气工程全国顶尖。西部科技创新港为学生提供了世界一流的科研环境。",campusImages:["https://images.unsplash.com/photo-1548266652-99cf27701ced?w=600"],dormitoryDesc:"四人间为主，有空调。创新港宿舍条件全国领先，单人间/双人间可选。",foodDesc:"西安美食全国闻名。肉夹馍、凉皮、羊肉泡馍、Biangbiang面应有尽有。交大食堂兼具南北风味。",cityDesc:"西安，十三朝古都。历史文化资源全球顶级。近年科技产业发展迅猛，三星、华为等设立研发中心。生活成本适中。",pros:["工科实力强","创新港条件好","历史文化丰富","生活成本适中"],cons:["冬季雾霾","城市偏保守","与东部差距大"]}];
+
+// ===== 粒子背景 =====
+function createParticles(){var t=document.getElementById("particlesBg"),e=["#6366f1","#8b5cf6","#f59e0b","#10b981","#ec4899"];for(var n=0;n<30;n++){var i=document.createElement("div");i.className="particle",i.style.left=Math.random()*100+"%",i.style.background=e[Math.floor(Math.random()*e.length)],i.style.animationDuration=Math.random()*8+6+"s",i.style.animationDelay=Math.random()*8+"s";var o=Math.random()*4+2;i.style.width=o+"px",i.style.height=o+"px",t.appendChild(i)}}
+
+// ===== 标签选择 =====
+function initTagGroups(){var t=[{groupId:"interestTags",inputId:"interest"},{groupId:"cityTags",inputId:"cityPreference"},{groupId:"priorityTags",inputId:"priority"},{groupId:"lifestyleTags",inputId:"lifestyle"},{groupId:"budgetTags",inputId:"budget"}];t.forEach(function(t){var e=document.getElementById(t.groupId),n=document.getElementById(t.inputId);if(e&&n){var i=e.querySelectorAll(".tag");i.forEach(function(e){e.addEventListener("click",function(t){t.preventDefault(),i.forEach(function(t){t.classList.remove("selected")}),e.classList.add("selected"),n.value=e.dataset.value})})}})}
+
+// ===== 表单验证 =====
+function validateForm(){var t=document.getElementById("score").value;if(!t||t<300||t>750)return alert("请输入有效的高考分数（300-750）"),!1;if(!document.getElementById("province").value)return alert("请选择你的省份"),!1;if(!document.getElementById("interest").value)return alert("请选择感兴趣的专业方向"),!1;if(!document.getElementById("cityPreference").value)return alert("请选择城市偏好"),!1;if(!document.getElementById("priority").value)return alert("请选择学校与专业的优先级"),!1;if(!document.getElementById("lifestyle").value)return alert("请选择理想的大学生活方式"),!1;if(!document.getElementById("budget").value)return alert("请选择预算偏好"),!1;return!0}
+
+// ===== AI匹配算法 =====
+function calculateMatch(t,e){var n=0,i=t.minScore,o=e.score-i;o>=0&&o<=20?n+=35:o>20&&o<=40?n+=30:o>40?n+=20:o>=-10&&o<0?n+=15:n+=0;var a={工科:["计算机科学与技术","机械工程","电气工程","电子信息工程","自动化","土木工程","航天工程","光学工程","控制科学","微电子","材料科学"],理科:["数学","物理","化学","天文学","地质学","统计学","环境科学","海洋科学","生态学","生命科学"],文科:["中文","历史","哲学","新闻传播","中国语言文学","国际关系"],医学:["临床医学","口腔医学","药学","公共卫生","护理学","生物医学工程"],商科:["经济学","工商管理","会计学","金融","管理科学"],法学:["法学","国际关系"],艺术:["设计","建筑学"]},r=a[e.interest]||[],s=0;t.majors.forEach(function(t){r.some(function(e){return t.includes(e)||e.includes(t)})&&s++});var l=Math.min(s/Math.max(r.length,1),1);n+=20*l;var d=function(t,e){var n=e.cityPreference,i=e.province;if("一线"===n)return["北京","上海","广州","深圳"].includes(t.city)?1:.4;if("新一线"===n)return["杭州","成都","武汉","南京","西安","重庆"].includes(t.city)?1:.5;if("离家近"===n){if(t.province===i)return 1;var o=function(t){var e={北京:["天津","河北"],上海:["江苏","浙江"],广东:["福建","江西","湖南","广西","海南"],浙江:["上海","江苏","安徽","福建","江西"],江苏:["上海","浙江","安徽","山东"],湖北:["河南","安徽","江西","湖南","重庆","陕西"],四川:["重庆","贵州","云南","西藏","陕西","甘肃","青海"],陕西:["山西","河南","湖北","重庆","四川","甘肃","宁夏","内蒙古"],福建:["浙江","江西","广东"],山东:["河北","河南","安徽","江苏"],河南:["河北","山西","陕西","湖北","安徽","山东"],湖南:["湖北","江西","广东","广西","贵州","重庆"],黑龙江:["内蒙古","吉林"],吉林:["黑龙江","辽宁","内蒙古"],辽宁:["吉林","内蒙古","河北"]};return e[t]||[]}(i);return o.includes(t.province)?.7:.3}return.7}(t,e);n+=15*d;var u=e.priority;"名校优先"===u?n+=t.tier.includes("C9")||t.tier.includes("985")?15:8:"专业优先"===u?n+=12:n+=13;var c=function(t,e){switch(e){case"学术派":return t.teacherStrength/100;case"社交派":return t.entertainment/100;case"吃货派":return t.foodRating/100;case"安逸派":return(t.campusEnv+t.dormitory)/2/100;default:return.7}}(t,e.lifestyle);return n+=10*c,"经济实惠"===e.budget?n+=["武汉","西安","成都","哈尔滨","重庆"].includes(t.city)?5:2:"中等预算"===e.budget?n+=4:n+=5,Math.round(Math.min(n,100))}
+
+function getRecommendations(t){var e=SCHOOLS_DB.map(function(e){return Object.assign({},e,{matchScore:calculateMatch(e,t)})});return e.sort(function(t,e){return e.matchScore-t.matchScore}),e.slice(0,6)}
+
+// ===== 渲染 =====
+function renderResults(t,e){var n=document.getElementById("matchSummary"),i=document.getElementById("schoolsGrid"),o=["🥇","🥈","🥉"];n.innerHTML=t.slice(0,3).map(function(t,e){return'<div class="match-card" onclick="scrollToSchool('+t.id+')"><div class="match-rank">'+(o[e]||"TOP "+(e+1))+'</div><div class="match-school">'+t.name+'</div><div class="match-score">'+t.matchScore+'</div><div class="match-score-label">综合匹配度</div></div>'}).join(""),i.innerHTML=t.map(function(t,n){return function(t,e,n){var i=function(t,e){if(t.province===e)return{label:"🏠",text:"本省院校（离家近）"};var n=[{北京:["天津","河北"]},{上海:["江苏","浙江"]}];return function(t){var e={北京:["天津","河北"],上海:["江苏","浙江"],广东:["福建","江西","湖南","广西","海南"],浙江:["上海","江苏","安徽","福建","江西"],江苏:["上海","浙江","安徽","山东"],湖北:["河南","安徽","江西","湖南","重庆","陕西"],四川:["重庆","贵州","云南","西藏","陕西","甘肃","青海"],陕西:["山西","河南","湖北","重庆","四川","甘肃","宁夏","内蒙古"],福建:["浙江","江西","广东"],山东:["河北","河南","安徽","江苏"],河南:["河北","山西","陕西","湖北","安徽","山东"],湖南:["湖北","江西","广东","广西","贵州","重庆"],黑龙江:["内蒙古","吉林"],吉林:["黑龙江","辽宁","内蒙古"],辽宁:["吉林","内蒙古","河北"]};return e[t]||[]}(e).includes(t.province)?{label:"🚄",text:"邻省院校（高铁可达）"}:{label:"✈️",text:"跨省院校（需远行）"}}(t,n);return'<div class="school-card" id="school-'+t.id+'"><div class="school-card-header" data-school-id="'+t.id+'"><div class="school-card-left"><div class="school-badge">🏫</div><div class="school-info"><h3>'+t.name+'</h3><div class="school-tags"><span class="school-tag">'+t.tier.split("/")[0]+'</span><span class="school-tag accent">📍 '+t.city+'</span><span class="school-tag">📊 最低'+t.minScore+"分</span></div></div></div><div class=\"school-card-right\"><span class=\"match-percent\">"+t.matchScore+'%</span><span class="expand-icon">▼</span></div></div><div class="school-card-body"><div class="dimensions-grid">'+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("师资力量",t.teacherStrength,"dim-teacher")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("校园环境",t.campusEnv,"dim-campus")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("宿舍条件",t.dormitory,"dim-dorm")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("美食体验",t.foodRating,"dim-food")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("娱乐生活",t.entertainment,"dim-fun")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("就业率",t.employmentRate,"dim-employ")+'</div><div class="school-desc">'+t.description+'</div><div class="detail-grid"><div class="detail-item"><div class="detail-icon">👨‍🏫</div><div class="detail-label">师资评分</div><div class="detail-value">'+t.teacherStrength+'/100</div></div><div class="detail-item"><div class="detail-icon">👫</div><div class="detail-label">男女比例</div><div class="detail-value">男'+t.genderRatio.male+"% : 女"+t.genderRatio.female+'%</div></div><div class="detail-item"><div class="detail-icon">💰</div><div class="detail-label">毕业平均薪资</div><div class="detail-value">¥'+t.avgSalary+'/月</div></div><div class="detail-item"><div class="detail-icon">🏙️</div><div class="detail-label">'+i.label+'</div><div class="detail-value">'+i.text+'</div></div><div class="detail-item"><div class="detail-icon">🎯</div><div class="detail-label">优势专业</div><div class="detail-value">'+t.strengths.slice(0,3).join("、")+'</div></div><div class="detail-item"><div class="detail-icon">🍜</div><div class="detail-label">美食评分</div><div class="detail-value">'+t.foodRating+'/100</div></div></div><div class="detail-grid" style="grid-template-columns: 1fr 1fr;"><div class="detail-item"><div class="detail-icon">🏠</div><div class="detail-label">宿舍条件</div><div class="detail-value" style="font-size:12px;font-weight:400;">'+t.dormitoryDesc+'</div></div><div class="detail-item"><div class="detail-icon">🍽️</div><div class="detail-label">美食娱乐</div><div class="detail-value" style="font-size:12px;font-weight:400;">'+t.foodDesc+'</div></div><div class="detail-item" style="grid-column: 1 / -1;"><div class="detail-icon">🌆</div><div class="detail-label">所在城市</div><div class="detail-value" style="font-size:12px;font-weight:400;">'+t.cityDesc+'</div></div></div><div class="pros-cons"><div class="pros"><h4>✅ 优势</h4><ul>'+t.pros.map(function(t){return"<li>"+t+"</li>"}).join("")+'</ul></div><div class="cons"><h4>⚠️ 注意</h4><ul>'+t.cons.map(function(t){return"<li>"+t+"</li>"}).join("")+'</ul></div></div><button class="btn-detail" onclick="openDetailModal('+t.id+')">📋 查看完整校园信息</button></div></div>'}(t,n+1,e)}).join(""),function(){document.querySelectorAll(".school-card-header").forEach(function(t){t.addEventListener("click",function(){var e=t.closest(".school-card"),n=e.classList.contains("expanded");document.querySelectorAll(".school-card.expanded").forEach(function(t){t!==e&&t.classList.remove("expanded")}),e.classList.toggle("expanded"),n||setTimeout(function(){e.scrollIntoView({behavior:"smooth",block:"start"})},100)})})}()}
+
+function scrollToSchool(t){var e=document.getElementById("school-"+t);e&&(e.classList.add("expanded"),setTimeout(function(){e.scrollIntoView({behavior:"smooth",block:"center"})},100))}
+
+function openDetailModal(t){var e=SCHOOLS_DB.find(function(e){return e.id===t});if(e){var n=document.getElementById("modalOverlay"),i=document.getElementById("modalContent");i.innerHTML='<div class="modal-school-header"><h2>'+e.name+'</h2><span class="tier-badge">'+e.tier+"</span></div>"+(e.campusImages?'<div class="image-gallery">'+e.campusImages.map(function(t){return'<img src="'+t+'" alt="'+e.name+'校园" loading="lazy" onerror="this.style.display=\'none\'">'}).join("")+"</div>":"")+'<div class="school-desc">'+e.description+'</div><div class="dimensions-grid">'+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("师资力量",e.teacherStrength,"dim-teacher")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("校园环境",e.campusEnv,"dim-campus")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("宿舍条件",e.dormitory,"dim-dorm")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("美食体验",e.foodRating,"dim-food")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("娱乐生活",e.entertainment,"dim-fun")+function(t,e,n){return'<div class="dimension-item"><div class="dimension-label"><span>'+t+'</span><span>'+e+'/100</span></div><div class="dimension-bar"><div class="dimension-fill '+n+'" style="width: '+e+'%"></div></div></div>'}("就业率",e.employmentRate,"dim-employ")+'</div><div class="detail-grid"><div class="detail-item"><div class="detail-icon">👫</div><div class="detail-label">男女比例</div><div class="detail-value">男生 '+e.genderRatio.male+"% · 女生 "+e.genderRatio.female+'%</div></div><div class="detail-item"><div class="detail-icon">💰</div><div class="detail-label">平均毕业薪资</div><div class="detail-value">¥'+e.avgSalary+'/月</div></div><div class="detail-item"><div class="detail-icon">🎯</div><div class="detail-label">开设专业</div><div class="detail-value" style="font-size:12px;">'+e.majors.join("、")+'</div></div><div class="detail-item"><div class="detail-icon">⭐</div><div class="detail-label">优势学科</div><div class="detail-value" style="font-size:12px;">'+e.strengths.join("、")+'</div></div></div><div class="detail-grid" style="grid-template-columns: 1fr 1fr;"><div class="detail-item"><div class="detail-icon">🏠</div><div class="detail-label">宿舍条件</div><div class="detail-value" style="font-size:12px;font-weight:400;">'+e.dormitoryDesc+'</div></div><div class="detail-item"><div class="detail-icon">🍽️</div><div class="detail-label">美食娱乐</div><div class="detail-value" style="font-size:12px;font-weight:400;">'+e.foodDesc+'</div></div><div class="detail-item" style="grid-column: 1 / -1;"><div class="detail-icon">🌆</div><div class="detail-label">所在城市</div><div class="detail-value" style="font-size:12px;font-weight:400;">'+e.cityDesc+'</div></div></div><div class="pros-cons"><div class="pros"><h4>✅ 优势</h4><ul>'+e.pros.map(function(t){return"<li>"+t+"</li>"}).join("")+'</ul></div><div class="cons"><h4>⚠️ 注意</h4><ul>'+e.cons.map(function(t){return"<li>"+t+"</li>"}).join("")+"</ul></div></div>",n.classList.add("active"),document.body.style.overflow="hidden"}}
+
+function closeModal(){document.getElementById("modalOverlay").classList.remove("active"),document.body.style.overflow=""}
+
+// ===== 面板切换 =====
+function switchPanel(t){for(var e=document.querySelectorAll(".panel"),n=0;n<e.length;n++)e[n].classList.remove("active");var i=document.getElementById(t);i&&i.classList.add("active"),window.scrollTo({top:0,behavior:"smooth"})}
+
+function updateStepIndicator(t){for(var e=document.querySelectorAll(".header-steps .step"),n=0;n<e.length;n++)e[n].classList.remove("active","completed"),n+1<t&&e[n].classList.add("completed"),n+1===t&&e[n].classList.add("active")}
+
+// ===== 表单提交 =====
+function handleSubmit(){if(!validateForm())return!1;var t=document.getElementById("btnSubmit");t.disabled=!0,t.innerHTML="<span>正在分析...</span>";var e={score:parseInt(document.getElementById("score").value),province:document.getElementById("province").value,interest:document.getElementById("interest").value,cityPreference:document.getElementById("cityPreference").value,priority:document.getElementById("priority").value,lifestyle:document.getElementById("lifestyle").value,budget:document.getElementById("budget").value};return switchPanel("panelLoading"),updateStepIndicator(2),setTimeout(function(){try{var n=getRecommendations(e);renderResults(n,e),switchPanel("panelResults"),updateStepIndicator(3)}catch(e){switchPanel("panelForm"),updateStepIndicator(1),alert("分析出错: "+e.message)}t.disabled=!1,t.innerHTML='<span>🚀 开始AI智能匹配</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'},800),!1}
+
+// ===== 弹窗事件 =====
+document.getElementById("modalClose").addEventListener("click",closeModal),document.getElementById("modalOverlay").addEventListener("click",function(t){t.target===t.currentTarget&&closeModal()}),document.addEventListener("keydown",function(t){"Escape"===t.key&&closeModal()});
+
+// ===== 初始化 =====
+createParticles(),initTagGroups();
+  </script>
 </body>
 </html>
